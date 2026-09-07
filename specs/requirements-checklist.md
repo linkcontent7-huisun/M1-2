@@ -4,10 +4,10 @@
 
 ## 1. 개발 환경
 
-- [ ] Python 3.10+ venv 구성
-- [ ] `fastapi` `uvicorn` `firebase-admin` `openai` `python-dotenv` 설치
-- [ ] Firebase 프로젝트 생성 + 서비스 계정 키 발급
-- [ ] OpenAI API 키 발급
+- [x] Python 3.10+ venv 구성 — `.venv`, Python 3.13.14
+- [x] `fastapi` `uvicorn` `firebase-admin` `openai` `python-dotenv` 설치
+- [ ] Firebase 프로젝트 생성 + 서비스 계정 키 발급 — **사용자가 준비해야 함**
+- [ ] OpenAI API 키 발급 — **사용자가 준비해야 함**
 - [ ] Render, Vercel 계정 준비
 
 ## 2. 데이터 선정 및 분석
@@ -18,33 +18,34 @@
 
 ## 3. FastAPI 프로젝트 구성
 
-- [ ] CORS 설정
-- [ ] `uvicorn main:app --reload` 로컬 실행 확인
-- [ ] `/docs` Swagger UI 확인
+- [x] CORS 설정 — `main.py`, `ALLOWED_ORIGINS` 환경 변수 기반
+- [x] `uvicorn main:app --reload` 로컬 실행 확인 — `.claude/launch.json`의 "M1-2 FastAPI"로 8010 포트 구동 확인
+- [x] `/docs` Swagger UI 확인 — 9개 엔드포인트 전부 노출 확인(2026-09-07)
 
 ## 4. Firestore 연동
 
-- [ ] 서비스 계정 키는 환경 변수로 관리(코드 하드코딩 금지)
-- [ ] 컬렉션 `data`(분석 데이터), `conversations`(대화 기록) 설계
+- [x] 서비스 계정 키는 환경 변수로 관리(코드 하드코딩 금지) — `app/firebase.py`, `FIREBASE_SERVICE_ACCOUNT_JSON`
+- [x] 컬렉션 `data`(분석 데이터), `conversations`(대화 기록) 설계
+- [ ] **실제 Firestore로 검증** — 서비스 계정 키가 없어 코드만 작성한 상태. 키 연결 후 재검증 필요
 
-## 5. 데이터 API (CRUD + summary)
+## 5. 데이터 API (CRUD + summary) — 코드 구현 완료, 실 Firestore 미검증
 
-- [ ] `POST /api/data`
-- [ ] `GET /api/data`
-- [ ] `PUT /api/data/{id}`
-- [ ] `DELETE /api/data/{id}`
-- [ ] `GET /api/data/summary`
+- [x] `POST /api/data` — `app/routers/data.py`
+- [x] `GET /api/data`
+- [x] `PUT /api/data/{id}`
+- [x] `DELETE /api/data/{id}`
+- [x] `GET /api/data/summary` — 기간·개수·평균/최대/최소·추세(절반 비교) 계산, `app/services/data_service.py`
 
-## 6. 대화 기록 API
+## 6. 대화 기록 API — 코드 구현 완료, 실 Firestore 미검증
 
-- [ ] `POST /api/conversations`
-- [ ] `GET /api/conversations`
-- [ ] `DELETE /api/conversations/{id}`
-- [ ] 대화 불러오기: (A) `GET /api/conversations/{id}` 또는 (B) 목록 응답에 messages 포함 — **A안 채택 예정**
+- [x] `POST /api/conversations`
+- [x] `GET /api/conversations`
+- [x] `DELETE /api/conversations/{id}`
+- [x] 대화 불러오기: **A안** `GET /api/conversations/{id}` 채택·구현
 
-## 7. AI 챗봇 API (컨텍스트 주입)
+## 7. AI 챗봇 API (컨텍스트 주입) — 코드 구현 완료, 실 OpenAI/Firestore 미검증
 
-- [ ] `POST /api/chat`: 요약 조회 → 시스템 프롬프트 삽입 → GPT 호출 → `conversations` 자동 저장
+- [x] `POST /api/chat`: 요약 조회 → 시스템 프롬프트 삽입 → GPT 호출 → `conversations` 자동 저장 — `app/services/chat_service.py`
 
 ## 8. 백엔드 배포 (Render)
 
