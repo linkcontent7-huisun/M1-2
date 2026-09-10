@@ -1,7 +1,7 @@
 // API 설정
 const API_BASE_URL = window.location.hostname === 'localhost'
     ? 'http://localhost:8000'
-    : (window.API_BASE_URL || 'https://m1-2-backend.onrender.com');
+    : (window.API_BASE_URL || 'https://m1-2-2pob.onrender.com');
 
 // 상태 관리
 const state = {
