@@ -12,9 +12,10 @@
 
 ## 2. 데이터 선정 및 분석
 
-- [ ] 시계열 데이터 100개 이상 확보 — **국내 주요 성지 소재 지자체 월별 방문자 수**
-      (한국관광 데이터랩, [[m1-1-tourism-trend]] 방식 재사용)
-- [ ] 요약 정보 산출: 기간 / 개수 / 평균·최대·최소 / 최근 추세
+- [x] 시계열 데이터 100개 이상 확보 — 한국관광공사 월별 방한 외래관광객 수 139건
+      (2015-01~2026-07, `data/foreign_visitors_monthly.csv`, M1-1 검증 데이터 재사용)
+- [x] 요약 정보 산출: 기간 / 개수 / 평균·최대·최소 / 최근 추세 —
+      `GET /api/data/summary` 구현, Firestore 적재 후 실데이터로 재검증 필요
 
 ## 3. FastAPI 프로젝트 구성
 
@@ -26,7 +27,9 @@
 
 - [x] 서비스 계정 키는 환경 변수로 관리(코드 하드코딩 금지) — `app/firebase.py`, `FIREBASE_SERVICE_ACCOUNT_JSON`
 - [x] 컬렉션 `data`(분석 데이터), `conversations`(대화 기록) 설계
-- [ ] **실제 Firestore로 검증** — 서비스 계정 키가 없어 코드만 작성한 상태. 키 연결 후 재검증 필요
+- [ ] **실제 Firestore로 검증·적재** — `scripts/import_foreign_visitors.py` 준비 완료.
+      서비스 계정 키 연결 완료. Firebase Console에서 Cloud Firestore API와 데이터베이스를
+      활성화한 뒤 139건 적재 및 API 재검증 필요
 
 ## 5. 데이터 API (CRUD + summary) — 코드 구현 완료, 실 Firestore 미검증
 

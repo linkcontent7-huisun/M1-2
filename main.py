@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from google.api_core.exceptions import GoogleAPICallError
 
 from app.config import settings
 from app.routers import chat, conversations, data
@@ -13,7 +14,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS or ["*"],
+    allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -29,6 +30,15 @@ def handle_missing_credentials(request: Request, exc: RuntimeError):
     """OPENAI_API_KEY / FIREBASE_SERVICE_ACCOUNT_JSON이 없을 때
     get_db()/get_client()가 던지는 RuntimeError를 503으로 통일해 응답한다."""
     return JSONResponse(status_code=503, content={"detail": str(exc)})
+
+
+@app.exception_handler(GoogleAPICallError)
+def handle_unavailable_google_service(request: Request, exc: GoogleAPICallError):
+    """Firestore API 미활성화·권한 문제를 클라이언트에 명확히 알린다."""
+    return JSONResponse(
+        status_code=503,
+        content={"detail": f"Firestore를 사용할 수 없습니다: {exc.message}"},
+    )
 
 
 @app.get("/")
