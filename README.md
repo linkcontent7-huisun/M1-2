@@ -21,7 +21,10 @@
 
 ## 진행 상태
 
-✅ 배포 완료 — FastAPI 백엔드(Render)·프론트엔드(Vercel)·Firestore 139건 적재·AI 채팅(코디세이 공개 API) 모두 정상 작동 확인 — 2026-09-10
+✅ 필수 요구사항(1~10번) 전부 완료 및 배포 사이트에서 실사용 검증 — FastAPI 백엔드(Render)·
+프론트엔드(Vercel)·Firestore 139건 적재·AI 채팅(코디세이 공개 API) 정상 작동, 채팅/대화기록의
+숨어있던 버그 2건 발견·수정 — 2026-09-11
+⏳ 보너스 과제(Function Calling, 통계 추가지표, 그래프, 내보내기, 다크모드)는 미착수
 
 ## 프로젝트 구조
 
@@ -154,3 +157,11 @@ vercel --prod
 | Swagger UI | <https://m1-2-2pob.onrender.com/docs> |
 
 **주의:** Render 무료 티어는 비활동 시 슬립되어 첫 요청이 50초 이상 걸릴 수 있다.
+
+## 제출 스크린샷
+
+배포된 서비스를 직접 조작해 캡처했다 (`scripts/take_screenshots.py`).
+
+| 채팅 (질문+답변+데이터 요약) | 데이터 관리 (추가 동작) | 대화 기록 (목록+불러오기) |
+|---|---|---|
+| ![chat](docs/screenshots/01_chat_summary.png) | ![data](docs/screenshots/02_data_management.png) | ![conversations](docs/screenshots/03_conversations.png) |
