@@ -23,6 +23,11 @@ const dataList = document.getElementById('data-list');
 const conversationsList = document.getElementById('conversations-list');
 const conversationMessages = document.getElementById('conversation-messages');
 const conversationTitle = document.getElementById('conversation-title');
+const statisticsContent = document.getElementById('statistics-content');
+const trendChart = document.getElementById('trend-chart');
+const themeToggle = document.getElementById('theme-toggle');
+const exportCsvBtn = document.getElementById('export-csv');
+const exportJsonBtn = document.getElementById('export-json');
 
 // ===== 탭 전환 =====
 tabButtons.forEach(btn => {
@@ -96,6 +101,77 @@ async function loadSummary() {
     }
 }
 
+// ===== 추가 지표 (보너스) =====
+async function loadStatistics() {
+    try {
+        const stats = await apiCall('/api/data/statistics');
+        statisticsContent.innerHTML = `
+            <p><strong>중앙값:</strong> ${formatNumber(stats.median)}</p>
+            <p><strong>표준편차:</strong> ${formatNumber(Math.round(stats.std_dev))}</p>
+            <p><strong>최근 12개월 평균:</strong> ${formatNumber(Math.round(stats.recent_12m_average))}</p>
+            <p><strong>전년 대비:</strong> ${stats.yoy_change_pct === null ? '데이터 부족(24개월 미만)' : `${stats.yoy_change_pct > 0 ? '+' : ''}${stats.yoy_change_pct.toFixed(1)}%`}</p>
+        `;
+    } catch (error) {
+        statisticsContent.innerHTML = '';
+    }
+}
+
+// ===== 추세 그래프 (보너스, 바닐라 Canvas) =====
+function drawTrendChart(data) {
+    if (!trendChart || !data || data.length === 0) return;
+
+    const ctx = trendChart.getContext('2d');
+    const width = trendChart.width;
+    const height = trendChart.height;
+    const padding = 24;
+
+    ctx.clearRect(0, 0, width, height);
+
+    const values = data.map(d => d.value);
+    const maxV = Math.max(...values);
+    const minV = Math.min(...values);
+    const range = maxV - minV || 1;
+
+    const isDark = document.body.getAttribute('data-theme') === 'dark';
+    const lineColor = '#667eea';
+    const fillColor = isDark ? 'rgba(102, 126, 234, 0.15)' : 'rgba(102, 126, 234, 0.1)';
+    const axisColor = isDark ? '#3a3a55' : '#e0e0e0';
+
+    const stepX = (width - padding * 2) / Math.max(values.length - 1, 1);
+    const points = values.map((v, i) => {
+        const x = padding + i * stepX;
+        const y = height - padding - ((v - minV) / range) * (height - padding * 2);
+        return [x, y];
+    });
+
+    // 기준선
+    ctx.strokeStyle = axisColor;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padding, height - padding);
+    ctx.lineTo(width - padding, height - padding);
+    ctx.stroke();
+
+    // 영역 채우기
+    ctx.beginPath();
+    ctx.moveTo(points[0][0], height - padding);
+    points.forEach(([x, y]) => ctx.lineTo(x, y));
+    ctx.lineTo(points[points.length - 1][0], height - padding);
+    ctx.closePath();
+    ctx.fillStyle = fillColor;
+    ctx.fill();
+
+    // 선 그리기
+    ctx.beginPath();
+    points.forEach(([x, y], i) => {
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    });
+    ctx.strokeStyle = lineColor;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+}
+
 chatForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -166,6 +242,7 @@ async function loadDataList() {
     try {
         const data = await apiCall('/api/data');
         state.dataList = data;
+        drawTrendChart(data);
 
         if (!data || data.length === 0) {
             dataList.innerHTML = '<p class="empty-state">데이터가 없습니다. 추가해주세요.</p>';
@@ -264,6 +341,50 @@ async function loadConversation(id, clickEvent) {
     }
 }
 
+// ===== 데이터 내보내기 (보너스) =====
+function downloadBlob(content, filename, mimeType) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+exportCsvBtn?.addEventListener('click', () => {
+    if (!state.dataList.length) {
+        showNotification('내보낼 데이터가 없습니다.', 'info');
+        return;
+    }
+    const header = 'date,value,memo';
+    const rows = state.dataList.map(d => `${d.date},${d.value},"${(d.memo || '').replace(/"/g, '""')}"`);
+    downloadBlob([header, ...rows].join('\n'), 'foreign_visitors_data.csv', 'text/csv;charset=utf-8');
+});
+
+exportJsonBtn?.addEventListener('click', () => {
+    if (!state.dataList.length) {
+        showNotification('내보낼 데이터가 없습니다.', 'info');
+        return;
+    }
+    downloadBlob(JSON.stringify(state.dataList, null, 2), 'foreign_visitors_data.json', 'application/json');
+});
+
+// ===== 다크 모드 토글 (보너스) =====
+function applyTheme(theme) {
+    document.body.setAttribute('data-theme', theme);
+    themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+    localStorage.setItem('theme', theme);
+    if (state.dataList.length) drawTrendChart(state.dataList);
+}
+
+themeToggle?.addEventListener('click', () => {
+    const current = document.body.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+});
+
 // ===== 유틸리티 =====
 function formatNumber(num) {
     if (typeof num !== 'number') return '0';
@@ -278,7 +399,12 @@ function showNotification(message, type = 'success') {
 
 // ===== 초기화 =====
 document.addEventListener('DOMContentLoaded', async () => {
+    // 저장된 테마 복원 (기본: light)
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    applyTheme(savedTheme);
+
     // 채팅 탭에서 시작
     await loadSummary();
+    await loadStatistics();
     await loadDataList();
 });

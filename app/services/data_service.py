@@ -6,8 +6,17 @@
 건드릴 필요가 없게 하려는 목적이다.
 """
 
+import statistics as stats_lib
+
 from app.firebase import get_db
-from app.schemas.data import DataCreate, DataMetrics, DataOut, DataSummary, DataUpdate
+from app.schemas.data import (
+    DataCreate,
+    DataMetrics,
+    DataOut,
+    DataStatistics,
+    DataSummary,
+    DataUpdate,
+)
 
 COLLECTION = "data"
 
@@ -76,6 +85,39 @@ def get_summary() -> DataSummary:
         count=len(rows),
         metrics=metrics,
         trend=trend,
+    )
+
+
+def get_statistics() -> DataStatistics:
+    """`/api/data/summary`에 없는 추가 지표(중앙값·표준편차·최근 12개월 평균·전년 대비 증감률).
+
+    보너스 과제 "인사이트·UX 고도화" 요구사항의 추가 지표 1개 이상 조건을 위해 만들었다.
+    """
+    rows = list_data()
+
+    if not rows:
+        return DataStatistics(median=0, std_dev=0, recent_12m_average=0, yoy_change_pct=None)
+
+    values = [row.value for row in rows]
+
+    median = stats_lib.median(values)
+    std_dev = stats_lib.pstdev(values) if len(values) > 1 else 0.0
+
+    recent_12m = values[-12:]
+    recent_12m_average = sum(recent_12m) / len(recent_12m)
+
+    yoy_change_pct = None
+    if len(values) >= 24:
+        prior_12m = values[-24:-12]
+        prior_12m_average = sum(prior_12m) / len(prior_12m)
+        if prior_12m_average != 0:
+            yoy_change_pct = (recent_12m_average - prior_12m_average) / prior_12m_average * 100
+
+    return DataStatistics(
+        median=median,
+        std_dev=std_dev,
+        recent_12m_average=recent_12m_average,
+        yoy_change_pct=yoy_change_pct,
     )
 
 

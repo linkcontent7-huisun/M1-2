@@ -29,3 +29,12 @@ class DataSummary(BaseModel):
     count: int
     metrics: DataMetrics
     trend: str
+
+
+class DataStatistics(BaseModel):
+    median: float = Field(..., description="중앙값")
+    std_dev: float = Field(..., description="표준편차")
+    recent_12m_average: float = Field(..., description="최근 12개월(또는 전체, 부족 시) 평균")
+    yoy_change_pct: float | None = Field(
+        None, description="최근 12개월 평균 대비 그 직전 12개월 평균 증감률(%). 24개월 미만이면 None"
+    )

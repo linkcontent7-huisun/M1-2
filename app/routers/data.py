@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
-from app.schemas.data import DataCreate, DataOut, DataSummary, DataUpdate
+from app.schemas.data import DataCreate, DataOut, DataStatistics, DataSummary, DataUpdate
 from app.services import data_service
 
 router = APIRouter(prefix="/api/data", tags=["data"])
@@ -19,6 +19,11 @@ def list_data():
 @router.get("/summary", response_model=DataSummary)
 def get_data_summary():
     return data_service.get_summary()
+
+
+@router.get("/statistics", response_model=DataStatistics)
+def get_data_statistics():
+    return data_service.get_statistics()
 
 
 @router.put("/{data_id}", response_model=DataOut)
