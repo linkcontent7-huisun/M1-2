@@ -83,6 +83,62 @@ python scripts/import_foreign_visitors.py
 | `API_BASE_URL` | 프론트엔드가 호출할 백엔드 주소 |
 | `ALLOWED_ORIGINS` | CORS 허용 도메인 |
 
+## 배포 방법
+
+### 1. 필수 환경 변수 준비
+
+Firebase 프로젝트 설정:
+1. [Firebase Console](https://console.firebase.google.com)에서 프로젝트 생성
+2. **Firestore Database** 활성화 (시작 모드 선택)
+3. **Cloud Firestore API** 활성화
+4. 서비스 계정 키 생성: `프로젝트 설정` → `서비스 계정` → `새 개인 키 생성` → JSON 다운로드
+
+OpenAI API 키 준비:
+1. [OpenAI API](https://platform.openai.com/api/keys)에서 API 키 생성
+
+### 2. Render 배포 (백엔드)
+
+```bash
+# GitHub에 푸시되어 있다고 가정
+# Render 웹사이트에서:
+# 1. "Create" → "Web Service" → GitHub 계정 연결
+# 2. 저장소 선택: linkcontent7-huisun/M1-2
+# 3. "Environment" 탭에서 환경 변수 추가:
+#    - OPENAI_API_KEY: <OpenAI API 키>
+#    - FIREBASE_SERVICE_ACCOUNT_JSON: <Firebase JSON 전체 문자열 또는 경로>
+#    - ALLOWED_ORIGINS: https://<vercel-frontend-url>
+# 4. Deploy 클릭
+```
+
+**주의:** Render 무료 티어는 콜드스타트가 있습니다. 첫 요청 시 15초 이상 걸릴 수 있습니다.
+
+### 3. Vercel 배포 (프론트엔드)
+
+```bash
+# GitHub에 푸시되어 있다고 가정
+# Vercel 웹사이트에서:
+# 1. "Add New" → "Project" → GitHub 계정 연결
+# 2. 저장소 선택: linkcontent7-huisun/M1-2
+# 3. "Output Directory": public
+# 4. "Environment Variables" 탭에서:
+#    - VITE_API_BASE_URL: <Render 백엔드 URL> (예: https://m1-2-backend.onrender.com)
+# 5. Deploy 클릭
+```
+
+또는 로컬에서 배포:
+
+```bash
+npm install -g vercel  # vercel CLI 설치
+cd C:\Users\noh hui sun\codyssey\assignments\M1-2
+vercel --prod
+```
+
 ## 배포 URL
 
-(배포 후 작성 — 프론트 / 백엔드 API / Swagger)
+배포 완료 후 작성:
+
+| 환경 | URL |
+|---|---|
+| 프론트엔드 | (Vercel URL) |
+| 백엔드 API | (Render URL) |
+| Swagger UI | (Render URL)/docs |

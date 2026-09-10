@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: m1-2-backend
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port 8000
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: FIREBASE_SERVICE_ACCOUNT_JSON
+        sync: false
+      - key: API_BASE_URL
+        value: https://m1-2-backend.onrender.com
+      - key: ALLOWED_ORIGINS
+        value: "https://m1-2-frontend.vercel.app,https://m1-2.vercel.app"
