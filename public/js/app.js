@@ -227,8 +227,8 @@ async function loadConversationsList() {
         }
 
         conversationsList.innerHTML = conversations.map(conv => `
-            <div class="conversation-item" onclick="loadConversation('${conv.id}')">
-                <div>${conv.messages?.[0]?.content?.substring(0, 50) || '(빈 대화)'}</div>
+            <div class="conversation-item" onclick="loadConversation('${conv.id}', event)">
+                <div>${conv.title || '(빈 대화)'} <span style="opacity:0.6;font-size:12px;">(${conv.message_count}개 메시지)</span></div>
                 <div class="conversation-date">${new Date(conv.created_at).toLocaleString('ko-KR')}</div>
             </div>
         `).join('');
@@ -237,7 +237,7 @@ async function loadConversationsList() {
     }
 }
 
-async function loadConversation(id) {
+async function loadConversation(id, clickEvent) {
     try {
         const conv = await apiCall(`/api/conversations/${id}`);
         state.currentConversation = conv;
@@ -246,7 +246,7 @@ async function loadConversation(id) {
         document.querySelectorAll('.conversation-item').forEach(item => {
             item.classList.remove('active');
         });
-        event.target.closest('.conversation-item').classList.add('active');
+        clickEvent?.target?.closest('.conversation-item')?.classList.add('active');
 
         // 메시지 표시
         conversationTitle.textContent = `대화 (${new Date(conv.created_at).toLocaleString('ko-KR')})`;
