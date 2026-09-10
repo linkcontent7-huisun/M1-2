@@ -21,7 +21,7 @@
 
 ## 진행 상태
 
-🚧 FastAPI 스캐폴딩 완료(데이터 5개·대화 4개·채팅 1개 API, Swagger UI 확인), 139건 실데이터 CSV 포함 — Firebase 연결·Firestore 적재와 프론트엔드 미착수 — 2026-09-09
+✅ 배포 완료 — FastAPI 백엔드(Render)·프론트엔드(Vercel)·Firestore 139건 적재·AI 채팅(코디세이 공개 API) 모두 정상 작동 확인 — 2026-09-10
 
 ## 프로젝트 구조
 
@@ -78,10 +78,22 @@ python scripts/import_foreign_visitors.py
 
 | 변수명 | 설명 |
 |---|---|
-| `OPENAI_API_KEY` | OpenAI API 키 |
+| `OPENAI_API_KEY` | OpenAI(호환) API 키 |
+| `OPENAI_BASE_URL` | (선택) OpenAI 호환 엔드포인트. 비우면 OpenAI 공식 서버를 쓴다 |
+| `OPENAI_MODEL` | 채팅에 쓸 모델명 |
+| `OPENAI_MAX_TOKENS` | 응답 최대 토큰 수 |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | Firebase 서비스 계정 키(JSON) |
 | `API_BASE_URL` | 프론트엔드가 호출할 백엔드 주소 |
 | `ALLOWED_ORIGINS` | CORS 허용 도메인 |
+
+### 코디세이 공개 API 사용
+
+개인 OpenAI 계정 크레딧 대신 코디세이 공개 API(기관 키로 정산)를 쓴다.
+`OPENAI_API_KEY`에 `sk-cody-live-...` 형식의 키를, `OPENAI_BASE_URL`에
+`https://copa.codyssey.kr/v1`(경로 끝의 `/v1` 필수 — OpenAI SDK가
+`{base_url}/chat/completions`로 요청을 만든다)을 넣는다. `gpt-5-mini`는
+추론(reasoning) 모델이라 `OPENAI_MAX_TOKENS`를 넉넉히(800 이상) 잡지 않으면
+빈 응답이 온다.
 
 ## 배포 방법
 
@@ -135,10 +147,10 @@ vercel --prod
 
 ## 배포 URL
 
-배포 완료 후 작성:
-
 | 환경 | URL |
 |---|---|
-| 프론트엔드 | (Vercel URL) |
-| 백엔드 API | (Render URL) |
-| Swagger UI | (Render URL)/docs |
+| 프론트엔드 | <https://m1-2-peach.vercel.app> |
+| 백엔드 API | <https://m1-2-2pob.onrender.com> |
+| Swagger UI | <https://m1-2-2pob.onrender.com/docs> |
+
+**주의:** Render 무료 티어는 비활동 시 슬립되어 첫 요청이 50초 이상 걸릴 수 있다.
