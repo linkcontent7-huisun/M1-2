@@ -117,7 +117,7 @@ chatForm.addEventListener('submit', async (e) => {
         });
 
         // AI 응답 표시
-        addMessage(response.response, 'assistant');
+        addMessage(response.reply, 'assistant');
 
         // 대화 저장 (자동)
         // 백엔드에서 /api/chat이 conversations에 자동 저장하므로 별도 호출 불필요
