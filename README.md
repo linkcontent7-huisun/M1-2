@@ -24,8 +24,8 @@
 ✅ 필수 요구사항(1~10번) 전부 완료 및 배포 사이트에서 실사용 검증 — FastAPI 백엔드(Render)·
 프론트엔드(Vercel)·Firestore 139건 적재·AI 채팅(코디세이 공개 API) 정상 작동, 채팅/대화기록의
 숨어있던 버그 2건 발견·수정
-✅ 보너스 과제 4/5 완료 — 추가 통계 지표, 추세 그래프, CSV/JSON 내보내기, 다크 모드
-⏳ Function Calling + MCP/GPT Actions 연동은 미착수 — 2026-09-11
+✅ 보너스 과제 5/5 완료 — 추가 통계 지표, 추세 그래프, CSV/JSON 내보내기, 다크 모드,
+Function Calling + MCP Server 연동 — 2026-09-11
 
 ## 프로젝트 구조
 
@@ -167,7 +167,15 @@ vercel --prod
 |---|---|---|---|
 | ![chat](docs/screenshots/01_chat_summary.png) | ![data](docs/screenshots/02_data_management.png) | ![conversations](docs/screenshots/03_conversations.png) | ![dark](docs/screenshots/04_dark_mode.png) |
 
-## 보너스 과제 (인사이트·UX 고도화)
+**Function Calling 실제 동작** — "표준편차랑 전년 대비 증감률 알려줘"라고 물으면 GPT가
+`get_data_statistics` 도구를 호출해 화면 상단 통계(578,217 / +18.9%)와 정확히 일치하는
+값으로 답한다.
+
+![function-calling](docs/screenshots/05_function_calling.png)
+
+## 보너스 과제
+
+### 1. 인사이트·UX 고도화
 
 | 항목 | 구현 |
 |---|---|
@@ -176,6 +184,45 @@ vercel --prod
 | 데이터 내보내기 | 데이터 관리 탭에서 CSV/JSON 다운로드 버튼 |
 | 다크 모드 | 헤더 토글, `localStorage`에 저장해 새로고침 후에도 유지 |
 
-**AI 도구 호출(Function Calling) + MCP/GPT Actions 연동은 미착수.** 코디세이 공개 API가
-tool calling을 지원하는지 문서화되어 있지 않고, MCP Server는 별도 배포가 필요해
-이 과제 범위를 크게 벗어난다고 판단해 보류했다.
+### 2. AI 도구 호출(Function Calling) + MCP Server 연동
+
+**코디세이 공개 API가 OpenAI 표준 Function Calling을 지원하는지부터 실측으로 확인했다** —
+`tools` 파라미터를 넣어 직접 호출해보니 `tool_calls`/`finish_reason: "tool_calls"`가 표준
+스펙 그대로 돌아왔다. 이후 실제 구현으로 이어졌다.
+
+**호출 흐름** (`app/services/chat_service.py`):
+
+```
+사용자 질문
+  → GPT 호출 (tools=[get_data_statistics, search_data_by_period] 포함)
+  → GPT가 "요약에 없는 정보가 필요하다"고 판단하면 tool_calls를 반환
+      (예: "표준편차 알려줘" → get_data_statistics 호출 요청)
+  → 서버가 실제로 해당 내부 함수를 실행(Firestore 조회)
+  → 결과를 role:"tool" 메시지로 넣어 재호출 (최대 4회 반복)
+  → GPT가 이 결과를 반영한 자연어 답변 생성
+  → 사용자에게 응답 + conversations에 최종 질문/답변만 저장
+```
+
+어떤 도구를 언제 호출할지는 **GPT 스스로 판단**한다(`tool_choice: "auto"`). 시스템
+프롬프트에 이미 요약(기간/개수/평균/최대/최소/추세)이 박혀 있으므로, 그 안에 없는
+질문 — "중앙값은?", "2020년 코로나 시기 수치는?" 같은 — 에서만 도구를 호출하는 것을
+실제 대화로 확인했다. 일반적인 질문("트렌드 한 줄 요약해줘")에는 도구를 호출하지 않는다.
+
+**동일 기능을 MCP Server로도 노출** (`mcp_server.py`) — 외부 MCP 클라이언트(Claude Desktop 등)에서
+같은 세 도구(`get_data_summary`, `get_data_statistics`, `search_data_by_period`)를 호출할 수
+있다. `app/services/data_service.py`를 그대로 재사용해 챗봇의 Function Calling과 동일한
+데이터 소스를 쓴다.
+
+```bash
+pip install "mcp[cli]"
+python mcp_server.py   # stdio로 실행, Claude Desktop 등에 등록해서 사용
+```
+
+**시행착오 두 가지** (실측 없이 넘어갔다면 몰랐을 것들):
+1. OpenAI SDK의 `message.model_dump()`를 그대로 재전송하면 코디세이 API가 모르는
+   부가 필드(`refusal` 등) 때문에 `400 unsupported_feature`가 난다 — 표준 스펙에
+   필요한 필드만 추려 넣도록 고쳤다.
+2. `search_data_by_period`가 원본 레코드를 통째로 반환하면, 추론(reasoning) 모델인
+   `gpt-5-mini`가 다음 라운드에서 reasoning에 토큰을 다 쓰고 빈 응답을 내는 경우가
+   있었다 — 반환값을 요약 통계+대표 샘플로 줄이고, 도구 호출 루프가 한도(4회) 안에
+   끝나지 않으면 `tool_choice: "none"`으로 강제 마무리하는 안전장치를 추가했다.

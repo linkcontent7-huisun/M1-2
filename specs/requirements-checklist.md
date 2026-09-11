@@ -82,10 +82,17 @@ Vercel 배포 사이트에서 채팅·데이터 관리·대화 기록을 실제�
       (`01_chat_summary.png` 채팅+요약, `02_data_management.png` 데이터 관리,
       `03_conversations.png` 대화 기록)
 
-## 보너스 (선택, 우선순위 낮음) — 4/5 완료
+## 보너스 (선택, 우선순위 낮음) — 5/5 완료
 
-- [ ] Function Calling + MCP/GPT Actions 연동 — **미착수**. 코디세이 공개 API의 tool calling
-      지원 여부가 문서화되어 있지 않고, MCP Server는 별도 배포가 필요해 범위를 크게 벗어난다.
+- [x] Function Calling + MCP/GPT Actions 연동 — 코디세이 API에 `tools` 파라미터로 직접
+      호출해 표준 OpenAI Function Calling(`tool_calls`/`finish_reason: "tool_calls"`)을
+      지원함을 실측 확인한 뒤 구현. `app/services/chat_service.py`에 `get_data_statistics`·
+      `search_data_by_period` 두 도구를 정의하고, GPT의 도구 호출 요청 → 내부 함수 실행 →
+      결과 재주입 → 최종 답변 생성 루프(최대 4회, 초과 시 `tool_choice: "none"`으로 강제
+      마무리)를 붙였다. 배포 환경에서 "표준편차 알려줘", "2020년 코로나 시기 수치는?" 등
+      실제 질문으로 도구 호출 동작 확인. 동일 기능을 `mcp_server.py`로 MCP Server화해
+      `scripts/verify_mcp_server.py`로 도구 목록 조회·호출까지 검증 완료(`get_data_summary`
+      포함 3개 도구).
 - [x] `/api/data/statistics` 추가 지표 — 중앙값·표준편차·최근 12개월 평균·전년 대비 증감률
       (`app/services/data_service.py:get_statistics`), 배포 환경에서 curl로 검증 완료
 - [x] 프론트 시각화 그래프 1개 — 채팅 탭 요약 아래 바닐라 Canvas 추세 라인 그래프
