@@ -1,8 +1,9 @@
-"""제출용 스크린샷 3종을 배포된 사이트에서 직접 캡처한다.
+"""제출용 스크린샷을 배포된 사이트에서 직접 캡처한다.
 
-1. 채팅 화면 (질문+답변+데이터 요약)
-2. 데이터 관리 화면 (데이터 추가 동작 확인)
+1. 채팅 화면 (질문+답변+데이터 요약+추가 통계+추세 그래프)
+2. 데이터 관리 화면 (데이터 추가 동작 확인 + CSV/JSON 내보내기 버튼)
 3. 대화 기록 화면 (대화 목록+불러오기)
+4. 다크 모드 (보너스: 테마 토글)
 """
 import time
 from pathlib import Path
@@ -60,6 +61,14 @@ def run():
             page.wait_for_timeout(1000)
         page.screenshot(path=str(OUT_DIR / "03_conversations.png"), full_page=True)
         print("saved 03_conversations.png")
+
+        # 4) 다크 모드(보너스): 새로고침으로 최신 데이터 반영 후 테마 토글 -> 캡처
+        page.reload(wait_until="networkidle")
+        page.wait_for_timeout(1500)
+        page.click("#theme-toggle")
+        page.wait_for_timeout(500)
+        page.screenshot(path=str(OUT_DIR / "04_dark_mode.png"), full_page=True)
+        print("saved 04_dark_mode.png")
 
         browser.close()
 

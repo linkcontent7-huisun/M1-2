@@ -23,8 +23,9 @@
 
 ✅ 필수 요구사항(1~10번) 전부 완료 및 배포 사이트에서 실사용 검증 — FastAPI 백엔드(Render)·
 프론트엔드(Vercel)·Firestore 139건 적재·AI 채팅(코디세이 공개 API) 정상 작동, 채팅/대화기록의
-숨어있던 버그 2건 발견·수정 — 2026-09-11
-⏳ 보너스 과제(Function Calling, 통계 추가지표, 그래프, 내보내기, 다크모드)는 미착수
+숨어있던 버그 2건 발견·수정
+✅ 보너스 과제 4/5 완료 — 추가 통계 지표, 추세 그래프, CSV/JSON 내보내기, 다크 모드
+⏳ Function Calling + MCP/GPT Actions 연동은 미착수 — 2026-09-11
 
 ## 프로젝트 구조
 
@@ -162,6 +163,19 @@ vercel --prod
 
 배포된 서비스를 직접 조작해 캡처했다 (`scripts/take_screenshots.py`).
 
-| 채팅 (질문+답변+데이터 요약) | 데이터 관리 (추가 동작) | 대화 기록 (목록+불러오기) |
-|---|---|---|
-| ![chat](docs/screenshots/01_chat_summary.png) | ![data](docs/screenshots/02_data_management.png) | ![conversations](docs/screenshots/03_conversations.png) |
+| 채팅 (질문+답변+데이터 요약+추가 통계+추세 그래프) | 데이터 관리 (추가 동작+내보내기) | 대화 기록 (목록+불러오기) | 다크 모드 |
+|---|---|---|---|
+| ![chat](docs/screenshots/01_chat_summary.png) | ![data](docs/screenshots/02_data_management.png) | ![conversations](docs/screenshots/03_conversations.png) | ![dark](docs/screenshots/04_dark_mode.png) |
+
+## 보너스 과제 (인사이트·UX 고도화)
+
+| 항목 | 구현 |
+|---|---|
+| 추가 지표 | `GET /api/data/statistics` — 중앙값·표준편차·최근 12개월 평균·전년 대비 증감률 |
+| 시각화 그래프 | 채팅 탭 요약 아래에 바닐라 Canvas로 139개월 추세 라인 그래프(외부 차트 라이브러리 없이 구현) |
+| 데이터 내보내기 | 데이터 관리 탭에서 CSV/JSON 다운로드 버튼 |
+| 다크 모드 | 헤더 토글, `localStorage`에 저장해 새로고침 후에도 유지 |
+
+**AI 도구 호출(Function Calling) + MCP/GPT Actions 연동은 미착수.** 코디세이 공개 API가
+tool calling을 지원하는지 문서화되어 있지 않고, MCP Server는 별도 배포가 필요해
+이 과제 범위를 크게 벗어난다고 판단해 보류했다.

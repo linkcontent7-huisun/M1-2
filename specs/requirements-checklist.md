@@ -82,10 +82,14 @@ Vercel 배포 사이트에서 채팅·데이터 관리·대화 기록을 실제�
       (`01_chat_summary.png` 채팅+요약, `02_data_management.png` 데이터 관리,
       `03_conversations.png` 대화 기록)
 
-## 보너스 (선택, 우선순위 낮음) — **미착수**
+## 보너스 (선택, 우선순위 낮음) — 4/5 완료
 
-- [ ] Function Calling + MCP/GPT Actions 연동
-- [ ] `/api/data/statistics` 추가 지표
-- [ ] 프론트 시각화 그래프 1개
-- [ ] CSV/JSON 내보내기
-- [ ] 다크 모드 토글
+- [ ] Function Calling + MCP/GPT Actions 연동 — **미착수**. 코디세이 공개 API의 tool calling
+      지원 여부가 문서화되어 있지 않고, MCP Server는 별도 배포가 필요해 범위를 크게 벗어난다.
+- [x] `/api/data/statistics` 추가 지표 — 중앙값·표준편차·최근 12개월 평균·전년 대비 증감률
+      (`app/services/data_service.py:get_statistics`), 배포 환경에서 curl로 검증 완료
+- [x] 프론트 시각화 그래프 1개 — 채팅 탭 요약 아래 바닐라 Canvas 추세 라인 그래프
+      (`public/js/app.js:drawTrendChart`), 외부 차트 라이브러리 없이 구현
+- [x] CSV/JSON 내보내기 — 데이터 관리 탭 버튼, Blob+다운로드 링크로 실제 다운로드 확인
+- [x] 다크 모드 토글 — 헤더 토글 버튼, `localStorage`로 새로고침 후에도 유지, 그래프도
+      테마에 맞춰 재렌더링. 배포 사이트에서 실제 토글 동작 확인(`docs/screenshots/04_dark_mode.png`)
