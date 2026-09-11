@@ -4,8 +4,11 @@
 2. 데이터 관리 화면 (데이터 추가 동작 확인 + CSV/JSON 내보내기 버튼)
 3. 대화 기록 화면 (대화 목록+불러오기)
 4. 다크 모드 (보너스: 테마 토글)
+
+사전 준비(개발용 도구라 requirements.txt에는 넣지 않았다):
+    pip install playwright
+    python -m playwright install chromium
 """
-import time
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright
